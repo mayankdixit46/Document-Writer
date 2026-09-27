@@ -1,25 +1,160 @@
-/* GitHub Pages Client-Side Styles */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
+:root {
+    --font-serif: 'Cinzel', serif;
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: #050811;
+    color: #F1F5F9;
+    overflow-x: hidden;
+}
+
+.font-serif-title {
+    font-family: var(--font-serif);
+    letter-spacing: 0.12em;
+}
+
+/* Cosmic Background Glow */
+.cosmic-bg {
+    background: 
+        radial-gradient(ellipse 90% 55% at 50% 0%, rgba(14, 165, 233, 0.18), transparent 75%),
+        radial-gradient(ellipse 70% 45% at 50% 100%, rgba(99, 102, 241, 0.15), transparent 75%),
+        #050811;
+}
+
+/* Glowing Pill Buttons */
+.btn-glow {
+    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+    color: #090d16;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-glow:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 40px rgba(56, 189, 248, 0.7), 0 4px 25px rgba(0, 0, 0, 0.5);
+    background: #ffffff;
+}
+
+.btn-indigo-glow {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-indigo-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 35px rgba(99, 102, 241, 0.6);
+}
+
+/* Floating Orb Elements */
+.floating-orb-left {
+    animation: floatLeft 7s ease-in-out infinite;
+}
+
+.floating-orb-right {
+    animation: floatRight 8s ease-in-out 1s infinite;
+}
+
+@keyframes floatLeft {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-14px) rotate(-4deg); }
+}
+
+@keyframes floatRight {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-16px) rotate(4deg); }
+}
+
+/* Planet Horizon Curve Container */
+.planet-horizon-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin-top: -60px;
+    padding-bottom: 20px;
+}
+
+.planet-horizon-arc {
+    position: relative;
+    width: 140%;
+    height: 380px;
+    left: -20%;
+    border-top-left-radius: 50% 100%;
+    border-top-right-radius: 50% 100%;
+    background: radial-gradient(circle at 50% -10%, #1e40af 0%, #030712 75%);
+    box-shadow: 
+        0 -15px 70px rgba(56, 189, 248, 0.5),
+        inset 0 2px 25px rgba(186, 230, 253, 0.7);
+}
+
+.planet-horizon-arc::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent 15%, #38bdf8 45%, #818cf8 55%, transparent 85%);
+    filter: blur(1px);
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+    background: rgba(10, 14, 26, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    border-color: rgba(56, 189, 248, 0.3);
+    box-shadow: 0 20px 60px rgba(14, 165, 233, 0.1);
+}
+
+/* Planet Sphere Graphic */
+.planet-sphere {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #60a5fa 0%, #1d4ed8 50%, #090d16 90%);
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.5), inset -10px -10px 20px rgba(0, 0, 0, 0.8);
+}
+
+.planet-sphere-orange {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #f97316 0%, #c2410c 50%, #090d16 90%);
+    box-shadow: 0 0 30px rgba(249, 115, 22, 0.5), inset -10px -10px 20px rgba(0, 0, 0, 0.8);
+}
+
+/* Mermaid Diagram Styling */
 .mermaid svg {
     max-width: 100% !important;
     height: auto !important;
     margin: 0 auto;
 }
 
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(5, 8, 17, 0.9);
 }
-
 ::-webkit-scrollbar-thumb {
-    background: rgba(51, 65, 85, 0.8);
+    background: rgba(56, 189, 248, 0.3);
     border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(71, 85, 105, 1);
+    background: rgba(56, 189, 248, 0.7);
 }
