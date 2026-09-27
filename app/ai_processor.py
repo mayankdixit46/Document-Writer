@@ -1,4 +1,5 @@
 import os
+import re
 import json
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, Field
@@ -230,19 +231,43 @@ REQUIREMENTS:
         primary = (style_info or {}).get("primary_color", "#1A365D")
         lines = ["graph TD", f"    classDef default fill:#EBF8FF,stroke:{primary},stroke-width:2px;"]
         
-        for i, step in enumerate(steps):
-            num = step.get("step_number", i + 1)
-            title = step.get("action_title", f"Step {num}")
-            actor = step.get("actor", "")
-            is_decision = step.get("is_decision", False)
-            label = f"{actor}: {title}" if actor else title
-            clean_label = label.replace('"', "'")
-            if is_decision:
-                lines.append(f'    S{num}{{"{clean_label}?"}}')
-            else:
-                lines.append(f'    S{num}["{clean_label}"]')
-            if i > 0:
-                prev_num = steps[i-1].get("step_number", i)
-                lines.append(f"    S{prev_num} --> S{num}")
+        actor_groups = {}
+        for step in steps:
+            actor = (step.get("actor") or "General Process").strip()
+            if actor not in actor_groups:
+                actor_groups[actor] = []
+            actor_groups[actor].append(step)
+
+        if len(actor_groups) > 1:
+            for actor, step_list in actor_groups.items():
+                safe_id = "lane_" + re.sub(r'[^a-zA-Z0-9]', '_', actor)
+                lines.append(f'    subgraph {safe_id}["{actor}"]')
+                for step in step_list:
+                    num = step.get("step_number", 1)
+                    title = step.get("action_title", f"Step {num}")
+                    is_decision = step.get("is_decision", False)
+                    clean_title = title.replace('"', "'")
+                    if is_decision:
+                        lines.append(f'        S{num}{{"{clean_title}?"}}')
+                    else:
+                        lines.append(f'        S{num}["{clean_title}"]')
+                lines.append('    end')
+        else:
+            for i, step in enumerate(steps):
+                num = step.get("step_number", i + 1)
+                title = step.get("action_title", f"Step {num}")
+                actor = step.get("actor", "")
+                is_decision = step.get("is_decision", False)
+                label = f"{actor}: {title}" if actor else title
+                clean_label = label.replace('"', "'")
+                if is_decision:
+                    lines.append(f'    S{num}{{"{clean_label}?"}}')
+                else:
+                    lines.append(f'    S{num}["{clean_label}"]')
+
+        for i in range(len(steps) - 1):
+            curr_num = steps[i].get("step_number", i + 1)
+            next_num = steps[i+1].get("step_number", i + 2)
+            lines.append(f"    S{curr_num} --> S{next_num}")
                 
         return "\n".join(lines)

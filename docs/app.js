@@ -155,19 +155,90 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Sample Data
     btnSampleData.addEventListener("click", () => {
-        fragmentedTextInput.value = `DOCUMENT TITLE: Standard Equipment Maintenance Procedure
+        fragmentedTextInput.value = `DOCUMENT TITLE: NBA Treatment and Offer Creation & Deployment Process Flow (1:1 Ops Manager)
 
-EXECUTIVE SUMMARY:
-This document outlines standard maintenance and operating sequence for industrial pump units.
+PURPOSE:
+This Standard Operating Procedure (SOP) defines the operational workflow for creating, configuring, testing, and deploying Next Best Action (NBA) treatments and marketing offer assets across operational environments.
 
-PROCESS STEPS:
-1. Operator inspects fluid levels and checks pressure gauge.
-2. If pressure exceeds 60 PSI, operator activates safety release valve.
-3. Maintenance log is updated with digital signature.
-4. Supervisor signs off on weekly report.
+SCOPE:
+Applies to all marketing operations managers, campaign execution teams, and AI automation agents responsible for authoring and deploying 1:1 Ops Manager change requests.
 
-SAFETY NOTES:
-- Retain all safety inspection screenshots attached to this SOP.`;
+DEFINITIONS, ACRONYMS AND ABBREVIATIONS:
+- CEA: Campaign Execution Applications
+- CDH-Internal: Lead Marketing Management System (internal)
+- NBA: Next Best Action
+- 1:1 Ops Manager: One-to-One Operations Manager (change request management system)
+- BeeFree Editor: Email content editor for treatment authoring
+- Persona/Seed List: Test contacts for personalization testing
+- Treatment Name: Display name for the email treatment
+- Asset Display Name: Derived from the Treatment Name
+- Key Code: Set at the action level in the action flow
+- Asset Name: Corresponds to the key code
+
+PROCESS OBJECTIVE:
+Ensure error-free, automated, and compliant creation of NBA email treatments, HTML email assembly in BeeFree Editor, preview authorization, and handoff for offer deployment.
+
+TOOLS USED:
+- CEA (Campaign Execution Applications)
+- CDH-Internal
+- 1:1 Ops Manager Portal
+- Adobe DreamWeaver (for HTML creation)
+- BeeFree Editor (for email content authoring)
+
+PROCESS STEPS & SWIMLANES:
+1. CEA System (Requester & Approver): Submit CEA Ticket (Issue, Topic, Notes, Metadata).
+2. CEA System (Requester & Approver): Approver Review & Select NBA Checkbox (If Yes, move ticket to Pending Fulfillment stage; if No, return to ticket submission).
+3. System Automation & AI Agent: Auto-Create Change Request (CR) in 1:1 Ops Manager (Linked by EM Number).
+4. System Automation & AI Agent: AI Agent Completes Plan Stage Activities (Logs to Pulse) and opens in Build Stage.
+5. 1:1 Ops Manager Portal (Super User): Log in as Super User & Navigate to Change Request.
+6. 1:1 Ops Manager Portal (Super User): Locate CR by EM Number & Verify Build Stage.
+7. 1:1 Ops Manager Portal (Super User): Navigate to Build Stage -> Email Treatment and Click Go on Author Treatment Step.
+8. 1:1 Ops Manager Portal (Super User): Configure Treatment Details (Enter Name, Key Code auto-pulled).
+9. 1:1 Ops Manager Portal (Super User): Create & Review Email Content in BeeFree Editor (Paste HTML from DreamWeaver, Select Blank Template, Visual Preview & Save).
+10. 1:1 Ops Manager Portal (Super User): Preview and Test (Select Email Account, Enter Test/Litmus IDs, Send Test Email).
+11. 1:1 Ops Manager Portal (Super User): Review & Share Preview (If Amends Needed, return to BeeFree Editor; if Approved, Share Preview to Requester in CEA Attachments).
+12. 1:1 Ops Manager Portal (Super User): Attach Email Treatment Info & Submit.
+13. CEA System (Requester & Approver): Requester Approval (If Rejected, return to Preview and Test; if Approved, Tag Mayank in Pulse Comments for Handoff).
+14. 1:1 Ops Manager Portal (Mayank): Ticket Assigned to Mayank.
+15. 1:1 Ops Manager Portal (Mayank): Create NBA Actions & Action Level Eligibility (End: Offer Deployed).
+
+PROCEDURE & DETAILED STEPS:
+Creating Action:
+Newsletter Build:
+- Clone the most recent approved newsletter or approved base template
+- Remove unused modules (do not comment on them)
+- Replace all placeholder text
+- Update copy, URLs, icons, and CTAs
+- Validate URLs, UTMs, and chronological blade tracking
+- Ensure all links resolve to pega.com or Partner Portal unless approved otherwise
+
+Template Variations:
+Partner Newsletter:
+- Remove highlighted speaker section
+- Add table of contents
+- Include consistent final resources module
+
+Community Newsletter:
+- Replace speaker section with "The latest Pega Community news" module
+- Refresh copies monthly
+
+Imagery and Icons:
+- Reuse approved monthly banner images
+- Banner links must resolve to Partner Portal or Community homepage
+- Use standard DAM icons and hyperlink them to the primary CTA
+
+Tracking and URLs:
+- Apply PREFERRED_APP_AREA=banner_image or blade_xx to all URLs
+- Keep blade numbers consistent within each module
+- Use hidden formatting for date hyperlinks
+- Exclude NBA secondary CTA from newsletters
+
+Audience Management:
+- Use approved base segments for Partner and Community newsletters
+- Update Community Manual List monthly using Power BI Active 90Day Member List
+
+VERSION HISTORY:
+- Ver.1 | 21.05.2024 | Requested By: Operations Team | Prepared/Modified By: Sajan Myndapanda | Significant Changes: New process based on pillars`;
     });
 
     if (btnSampleVtt) {
