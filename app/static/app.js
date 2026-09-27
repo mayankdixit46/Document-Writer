@@ -16,6 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const screenshotsInput = document.getElementById("screenshotsInput");
     const screenshotsList = document.getElementById("screenshotsList");
 
+    const transcriptFileInput = document.getElementById("transcriptFileInput");
+    const transcriptFileName = document.getElementById("transcriptFileName");
+    const btnSampleVtt = document.getElementById("btnSampleVtt");
+
     const apiKeyInput = document.getElementById("apiKeyInput");
     const btnSampleData = document.getElementById("btnSampleData");
     const btnProcess = document.getElementById("btnProcess");
@@ -33,18 +37,73 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let uploadedScreenshots = [];
 
+    // VTT & Transcript File Parser
+    function cleanTranscriptText(text) {
+        if (!text || !text.trim()) return "";
+        let content = text.trim();
+
+        if (content.startsWith("{") || content.startsWith("[")) {
+            try {
+                const data = JSON.parse(content);
+                if (data.text) return data.text.trim();
+                if (Array.isArray(data.segments)) {
+                    return data.segments.map(s => s.text).filter(Boolean).join("\n");
+                }
+            } catch (e) {}
+        }
+
+        const lines = content.split(/\r?\n/);
+        const cleaned = [];
+
+        lines.forEach(line => {
+            let l = line.trim();
+            if (l.startsWith("WEBVTT") || l.startsWith("NOTE") || l.startsWith("STYLE") || l.startsWith("REGION") || l.startsWith("Kind:")) return;
+            if (!l) return;
+            if (/^\d+$/.test(l)) return;
+            if (l.includes("-->") && /\d{2}:\d{2}/.test(l)) return;
+
+            l = l.replace(/<[^>]+>/g, "").trim();
+            l = l.replace(/^(?:\[|\()? \d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)? (?:\]|\))?\s*[\-:\s]*/i, "").trim();
+
+            if (l) {
+                if (cleaned.length === 0 || cleaned[cleaned.length - 1] !== l) {
+                    cleaned.push(l);
+                }
+            }
+        });
+
+        return cleaned.join("\n");
+    }
+
+    // File Handler: VTT / Transcript File
+    if (transcriptFileInput) {
+        transcriptFileInput.addEventListener("change", (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const rawContent = event.target.result;
+                    const cleaned = cleanTranscriptText(rawContent);
+                    fragmentedTextInput.value = cleaned;
+                    transcriptFileName.innerText = `Loaded: ${file.name} (Parsed ${cleaned.split('\n').length} lines)`;
+                    transcriptFileName.classList.add("text-indigo-400");
+                };
+                reader.readAsText(file);
+            }
+        });
+    }
+
     // Tab Switching Logic
     tabGenerate.addEventListener("click", () => {
-        tabGenerate.className = "px-5 py-3 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition";
-        tabPreview.className = "px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+        tabGenerate.className = "px-5 py-3 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition cursor-pointer";
+        tabPreview.className = "px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition cursor-pointer";
         viewGenerate.classList.remove("hidden");
         viewPreview.classList.add("hidden");
     });
 
     tabPreview.addEventListener("click", () => {
-        if (tabPreview.disabled) return;
-        tabPreview.className = "px-5 py-3 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition";
-        tabGenerate.className = "px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+        tabPreview.className = "px-5 py-3 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition cursor-pointer";
+        tabGenerate.className = "px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition cursor-pointer";
         viewPreview.classList.remove("hidden");
         viewGenerate.classList.add("hidden");
     });
@@ -115,21 +174,51 @@ MAINTENANCE & SAFETY NOTES:
 - Retain audit logs for 7 years as per financial compliance regulations.`;
     });
 
+    if (btnSampleVtt) {
+        btnSampleVtt.addEventListener("click", () => {
+            const sampleVtt = `WEBVTT
+
+1
+00:00:01.000 --> 00:00:04.500
+Welcome to the Equipment Maintenance SOP session.
+
+2
+00:00:04.600 --> 00:00:09.200
+<v Operator>Operator:</v> Step 1: Check fluid levels and verify pressure reading.
+
+3
+00:00:09.300 --> 00:00:15.000
+<v Supervisor>Supervisor:</v> Step 2: If pressure exceeds 60 PSI, activate emergency safety release valve.
+
+4
+00:00:15.100 --> 00:00:20.000
+<v Technician>Technician:</v> Step 3: Log inspection metrics in digital safety portal.`;
+
+            const cleaned = cleanTranscriptText(sampleVtt);
+            fragmentedTextInput.value = cleaned;
+            transcriptFileName.innerText = `Loaded: sample_meeting.vtt (Parsed 4 transcript lines)`;
+            transcriptFileName.classList.add("text-indigo-400");
+        });
+    }
+
     // Main Process Document Submit
     btnProcess.addEventListener("click", async () => {
         const textContent = fragmentedTextInput.value.trim();
         if (!textContent) {
-            alert("Please provide fragmented input text or load sample data.");
+            alert("Please provide fragmented input text or upload a VTT / transcript file.");
             return;
         }
 
         // Show Progress Modal
         progressModal.classList.remove("hidden");
-        updateProgress("Extracting template formatting rules...", "25%");
+        updateProgress("Parsing VTT transcript & extracting formatting rules...", "25%");
 
         const formData = new FormData();
         if (templateFileInput.files.length > 0) {
             formData.append("template_file", templateFileInput.files[0]);
+        }
+        if (transcriptFileInput && transcriptFileInput.files.length > 0) {
+            formData.append("transcript_file", transcriptFileInput.files[0]);
         }
         formData.append("raw_text", textContent);
         if (apiKeyInput.value.trim()) {
@@ -214,20 +303,57 @@ MAINTENANCE & SAFETY NOTES:
 
         documentTextPreview.innerHTML = html;
 
-        // Enable & Switch to Preview Tab
-        tabPreview.disabled = false;
         tabPreview.click();
     }
 
     async function renderMermaidDiagram(mermaidCode) {
+        if (!mermaidCode || !mermaidCode.trim()) {
+            mermaidRenderContainer.innerHTML = `<p class="text-xs text-amber-400">Please enter valid Mermaid diagram code.</p>`;
+            return;
+        }
         mermaidRenderContainer.removeAttribute("data-processed");
-        mermaidRenderContainer.innerHTML = mermaidCode;
+        mermaidRenderContainer.innerHTML = "";
+        
         try {
-            await mermaid.run({ nodes: [mermaidRenderContainer] });
+            const id = "mermaid-svg-" + Math.floor(Math.random() * 100000);
+            const { svg } = await mermaid.render(id, mermaidCode.trim());
+            mermaidRenderContainer.innerHTML = svg;
         } catch (e) {
             console.error("Mermaid client-side render error:", e);
+            mermaidRenderContainer.innerHTML = `
+                <div class="p-4 bg-red-950/40 border border-red-800/80 rounded-xl text-left w-full">
+                    <p class="text-xs font-bold text-red-400 mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Diagram Syntax Error</p>
+                    <pre class="text-[11px] text-red-300 font-mono whitespace-pre-wrap">${e.message || e}</pre>
+                </div>
+            `;
         }
     }
+
+    // Render initial sample process flow diagram
+    const defaultInitialMermaid = `graph TD
+    classDef default fill:#EBF8FF,stroke:#1A365D,stroke-width:2px;
+    S1["Requisitioner: Initiates Request"] --> S2["Manager: Approval Check"]
+    S2 --> S3["Procurement: Verification"]
+    S3 --> S4["Vendor: Delivery & Receiving"]
+    S4 --> S5["Finance: Invoice Matching & Payment"]`;
+
+    rawMermaidText.value = defaultInitialMermaid;
+    renderMermaidDiagram(defaultInitialMermaid);
+
+    documentTextPreview.innerHTML = `
+        <div class="border-b border-slate-800 pb-3 mb-3">
+            <h3 class="text-base font-bold text-white">Enterprise Purchase Requisition & Approval Process</h3>
+            <p class="text-xs text-blue-400 font-medium">Standard Operating Procedure Sample</p>
+        </div>
+        <div class="bg-slate-950 p-3 rounded border border-slate-800 mb-4">
+            <h4 class="font-semibold text-slate-300 text-xs mb-1">Executive Summary</h4>
+            <p class="text-slate-400 italic">This SOP defines the required steps for creating, authorizing, and processing purchase requisitions across all operations units.</p>
+        </div>
+        <div class="mb-4">
+            <h4 class="font-bold text-slate-200 text-xs mb-1">Interactive Process Flow Synthesizer</h4>
+            <p class="text-slate-300 mb-1">You can edit the Mermaid flowchart code on the left and click "Re-render Diagram", or switch to "Document Synthesizer" to process custom text & templates.</p>
+        </div>
+    `;
 
     btnReRenderDiagram.addEventListener("click", () => {
         renderMermaidDiagram(rawMermaidText.value);

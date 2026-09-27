@@ -44,16 +44,19 @@ async def serve_ui():
     return HTMLResponse(content="<h1>Document Writer API is running</h1>")
 
 
+from app.transcript_parser import TranscriptParser
+
 @app.post("/api/process")
 async def process_document(
     template_file: Optional[UploadFile] = File(None),
     text_file: Optional[UploadFile] = File(None),
+    transcript_file: Optional[UploadFile] = File(None),
     raw_text: Optional[str] = Form(None),
     screenshots: List[UploadFile] = File([]),
     api_key: Optional[str] = Form(None)
 ):
     """
-    Main endpoint: Synthesizes fragmented text + standard template + screenshots into a formatted document with process flow diagram.
+    Main endpoint: Synthesizes fragmented text / VTT transcripts + standard template + screenshots into a formatted document with process flow diagram.
     """
     request_id = str(uuid.uuid4())[:8]
     req_upload_dir = UPLOAD_DIR / request_id
@@ -67,18 +70,20 @@ async def process_document(
             shutil.copyfileobj(template_file.file, buffer)
         template_style = TemplateParser.parse_template(template_path)
     
-    # 2. Handle Text Input
+    # 2. Handle Text / VTT Transcript Input
     extracted_text = ""
-    if raw_text and raw_text.strip():
-        extracted_text = raw_text.strip()
-    elif text_file and text_file.filename:
-        text_path = req_upload_dir / text_file.filename
-        with open(text_path, "wb") as buffer:
-            shutil.copyfileobj(text_file.file, buffer)
-        extracted_text = text_path.read_text(encoding="utf-8", errors="ignore")
+    target_t_file = transcript_file or text_file
+    if target_t_file and target_t_file.filename:
+        t_path = req_upload_dir / target_t_file.filename
+        with open(t_path, "wb") as buffer:
+            shutil.copyfileobj(target_t_file.file, buffer)
+        file_content = t_path.read_text(encoding="utf-8", errors="ignore")
+        extracted_text = TranscriptParser.parse_transcript(file_content)
+    elif raw_text and raw_text.strip():
+        extracted_text = TranscriptParser.parse_transcript(raw_text.strip())
 
     if not extracted_text:
-        raise HTTPException(status_code=400, detail="Please provide fragmented input text or upload a text file.")
+        raise HTTPException(status_code=400, detail="Please provide fragmented input text or upload a VTT / transcript file.")
 
     # 3. Handle Screenshots / Attached Images
     screenshot_paths = {}

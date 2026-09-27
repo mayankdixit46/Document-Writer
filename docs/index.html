@@ -31,13 +31,16 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-4">
-                <button id="btnSampleData" class="px-3.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition border border-slate-700 flex items-center gap-2">
-                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Load Sample Data
+            <div class="flex items-center gap-3">
+                <button id="btnSampleData" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition border border-slate-700 flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Sample Process
+                </button>
+                <button id="btnSampleVtt" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition border border-slate-700 flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-file-audio text-indigo-400"></i> Sample VTT Transcript
                 </button>
                 <div class="relative">
                     <input type="password" id="apiKeyInput" placeholder="Enter Gemini API Key" 
-                        class="w-56 px-3 py-1.5 text-xs bg-slate-800/80 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 text-slate-200 placeholder-slate-500">
+                        class="w-52 px-3 py-1.5 text-xs bg-slate-800/80 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 text-slate-200 placeholder-slate-500">
                 </div>
             </div>
         </div>
@@ -48,11 +51,11 @@
         
         <!-- Navigation Tabs -->
         <div class="flex border-b border-slate-800 gap-2">
-            <button id="tabGenerate" class="px-5 py-3 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition">
+            <button id="tabGenerate" class="px-5 py-3 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition cursor-pointer">
                 <i class="fa-solid fa-cloud-arrow-up"></i> Document Synthesizer
             </button>
-            <button id="tabPreview" class="px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition" disabled>
-                <i class="fa-solid fa-eye"></i> Process Flow & Document Preview
+            <button id="tabPreview" class="px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition cursor-pointer">
+                <i class="fa-solid fa-diagram-project text-blue-400"></i> Process Flow Synthesizer & Preview
             </button>
         </div>
 
@@ -80,17 +83,34 @@
                     </label>
                 </div>
 
-                <!-- Card 2: Fragmented Input Text -->
+                <!-- Card 2: Fragmented Input Text & VTT Transcript Upload -->
                 <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur flex-1 flex flex-col">
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
                             <span class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs font-bold">2</span>
-                            Fragmented Input Text / Content
+                            Input Content / VTT Transcript File
                         </h2>
-                        <span class="text-xs text-slate-400">Raw notes or process steps</span>
+                        <span class="text-xs text-slate-400">Raw notes, VTT subtitle file, or meeting transcript</span>
                     </div>
 
-                    <textarea id="fragmentedTextInput" rows="10" placeholder="Paste your raw fragmented document text here... For example:
+                    <!-- VTT / Transcript File Upload Bar -->
+                    <div class="mb-3 flex items-center justify-between bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                        <div class="flex items-center gap-2.5 overflow-hidden">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                                <i class="fa-solid fa-file-audio"></i>
+                            </div>
+                            <div class="truncate">
+                                <p id="transcriptFileName" class="text-xs font-medium text-slate-300 truncate">Upload VTT or Transcript File (.vtt, .srt, .txt, .json)</p>
+                                <p class="text-[10px] text-slate-500">Automatically parses WebVTT timestamps & speaker tags</p>
+                            </div>
+                        </div>
+                        <label class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-lg cursor-pointer transition border border-slate-700 flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-file-import"></i> Load Transcript / VTT
+                            <input type="file" id="transcriptFileInput" accept=".vtt,.srt,.txt,.json,.transcript" class="hidden">
+                        </label>
+                    </div>
+
+                    <textarea id="fragmentedTextInput" rows="10" placeholder="Paste raw document text or upload a VTT/transcript file above... For example:
 - Title: Equipment Maintenance Standard Process
 - Steps: Operator checks machine, logs reading, alerts supervisor if pressure > 50 PSI...
 - Notes: Maintain safety guidelines." 

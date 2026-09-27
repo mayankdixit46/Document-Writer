@@ -180,8 +180,34 @@ REQUIREMENTS:
                 "screenshot_references": screenshots
             })
 
-        # Basic process steps heuristic
-        process_steps = [
+        # Dynamic process steps extraction heuristic
+        import re
+        extracted_steps = []
+        step_idx = 1
+        for line in lines:
+            m = re.match(r'^(?:[\-\*\•]\s*)?(?:step\s*)?(\d+)[\.\:\-\)]\s*(.+)', line, re.IGNORECASE)
+            if m:
+                step_content = m.group(2).strip()
+                parts = re.split(r'[:\-–]', step_content, maxsplit=1)
+                title = parts[0].strip()
+                desc = parts[1].strip() if len(parts) > 1 else title
+                
+                actor = ""
+                words = title.split()
+                if words and words[0].istitle():
+                    actor = words[0]
+                
+                extracted_steps.append({
+                    "step_number": step_idx,
+                    "actor": actor,
+                    "action_title": title[:45],
+                    "description": desc,
+                    "next_steps": [f"Step {step_idx+1}"],
+                    "is_decision": any(w in desc.lower() for w in ["if", "check", "verify", "review", "approve"])
+                })
+                step_idx += 1
+
+        process_steps = extracted_steps if extracted_steps else [
             {"step_number": 1, "actor": "User", "action_title": "Input Submission", "description": "User submits text and template file", "next_steps": ["Step 2"], "is_decision": False},
             {"step_number": 2, "actor": "System", "action_title": "Template & Text Analysis", "description": "Extract formatting rules and parse fragmented content", "next_steps": ["Step 3"], "is_decision": False},
             {"step_number": 3, "actor": "AI Engine", "action_title": "Process Flow Generation", "description": "Construct process diagram and embed screenshots", "next_steps": ["Step 4"], "is_decision": False},
@@ -195,7 +221,7 @@ REQUIREMENTS:
             "date": "2026-09-27",
             "executive_summary": text[:300] + ("..." if len(text) > 300 else ""),
             "sections": sections,
-            "process_title": "Document Processing & Generation Flow",
+            "process_title": title + " - Flow",
             "process_steps": process_steps,
             "mermaid_code": self._generate_fallback_mermaid(process_steps)
         }
@@ -208,8 +234,13 @@ REQUIREMENTS:
             num = step.get("step_number", i + 1)
             title = step.get("action_title", f"Step {num}")
             actor = step.get("actor", "")
+            is_decision = step.get("is_decision", False)
             label = f"{actor}: {title}" if actor else title
-            lines.append(f'    S{num}["{label}"]')
+            clean_label = label.replace('"', "'")
+            if is_decision:
+                lines.append(f'    S{num}{{"{clean_label}?"}}')
+            else:
+                lines.append(f'    S{num}["{clean_label}"]')
             if i > 0:
                 prev_num = steps[i-1].get("step_number", i)
                 lines.append(f"    S{prev_num} --> S{num}")
