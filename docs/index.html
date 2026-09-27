@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Writer - AI Document & Process Flow Synthesizer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Mermaid.js for Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <!-- Mammoth.js for Reading Template .docx -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <!-- docx.js for Generating .docx Word Files in Browser -->
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-file-contract text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-blue-400 bg-clip-text text-transparent">Document Writer</h1>
+                    <p class="text-xs text-slate-400">GitHub Pages Live App &bull; AI Document Standardizer</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button id="btnSampleData" class="px-3.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition border border-slate-700 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Load Sample Data
+                </button>
+                <div class="relative">
+                    <input type="password" id="apiKeyInput" placeholder="Enter Gemini API Key" 
+                        class="w-56 px-3 py-1.5 text-xs bg-slate-800/80 border border-slate-700 rounded-lg focus:outline-none focus:border-blue-500 text-slate-200 placeholder-slate-500">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 flex flex-col gap-8">
+        
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-800 gap-2">
+            <button id="tabGenerate" class="px-5 py-3 text-sm font-semibold border-b-2 border-blue-500 text-blue-400 flex items-center gap-2 transition">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Document Synthesizer
+            </button>
+            <button id="tabPreview" class="px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition" disabled>
+                <i class="fa-solid fa-eye"></i> Process Flow & Document Preview
+            </button>
+        </div>
+
+        <!-- Section 1: Generator View -->
+        <div id="viewGenerate" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Column: Uploads & Text Input (8 cols) -->
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                
+                <!-- Card 1: Standard Template File Upload -->
+                <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs font-bold">1</span>
+                            Standard Document Format Template (.docx / .pdf)
+                        </h2>
+                        <span class="text-xs text-slate-400">Controls document styles, typography & headers</span>
+                    </div>
+                    
+                    <label id="templateDropzone" class="border-2 border-dashed border-slate-700/80 hover:border-blue-500/80 bg-slate-900/50 hover:bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition group">
+                        <i class="fa-solid fa-file-word text-3xl text-slate-500 group-hover:text-blue-400 mb-2 transition"></i>
+                        <span id="templateFileName" class="text-sm font-medium text-slate-300">Click to upload template file</span>
+                        <span class="text-xs text-slate-500 mt-1">Supports Word (.docx) or PDF (.pdf) template</span>
+                        <input type="file" id="templateFileInput" accept=".docx,.pdf" class="hidden">
+                    </label>
+                </div>
+
+                <!-- Card 2: Fragmented Input Text -->
+                <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur flex-1 flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs font-bold">2</span>
+                            Fragmented Input Text / Content
+                        </h2>
+                        <span class="text-xs text-slate-400">Raw notes or process steps</span>
+                    </div>
+
+                    <textarea id="fragmentedTextInput" rows="10" placeholder="Paste your raw fragmented document text here... For example:
+- Title: Equipment Maintenance Standard Process
+- Steps: Operator checks machine, logs reading, alerts supervisor if pressure > 50 PSI...
+- Notes: Maintain safety guidelines." 
+                        class="w-full flex-1 p-4 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-y font-mono"></textarea>
+                </div>
+            </div>
+
+            <!-- Right Column: Screenshots Upload & Submit (4 cols) -->
+            <div class="lg:col-span-4 flex flex-col gap-6">
+                
+                <!-- Card 3: Preserved Screenshots / Images -->
+                <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur">
+                    <div class="mb-3">
+                        <h2 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs font-bold">3</span>
+                            Process Screenshots / Images
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Preserved intact in final document</p>
+                    </div>
+
+                    <label class="border-2 border-dashed border-slate-700/80 hover:border-blue-500/80 bg-slate-900/50 hover:bg-slate-900 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition mb-4">
+                        <i class="fa-solid fa-images text-2xl text-slate-500 mb-1"></i>
+                        <span class="text-xs font-medium text-slate-300">Upload Screenshots (.png, .jpg)</span>
+                        <input type="file" id="screenshotsInput" accept="image/*" multiple class="hidden">
+                    </label>
+
+                    <div id="screenshotsList" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                        <p class="text-xs text-slate-500 italic text-center py-4">No screenshots added yet.</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Action Button -->
+                <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur flex flex-col justify-between flex-1">
+                    <div>
+                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Browser Features</h3>
+                        <ul class="text-xs text-slate-300 space-y-2 mb-6">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Client-Side Gemini AI Integration</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Mermaid Process Flow Generation</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Word (.docx) Synthesis in Browser</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Retains Screenshots Intact</li>
+                        </ul>
+                    </div>
+
+                    <button id="btnProcess" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-gears text-lg"></i> Synthesize Standard Document
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Overlay / Modal -->
+        <div id="progressModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl flex flex-col items-center text-center">
+                <div class="w-16 h-16 rounded-full bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl mb-4 animate-spin">
+                    <i class="fa-solid fa-spinner"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-100 mb-2">Synthesizing Document</h3>
+                <p id="progressStatus" class="text-xs text-slate-400 mb-6">Analyzing text and extracting process steps...</p>
+                
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-1/4 transition-all duration-500"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Results & Preview View -->
+        <div id="viewPreview" class="hidden flex-col gap-8">
+            
+            <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-400"></i> Document Synthesis Complete!
+                    </h2>
+                    <p class="text-xs text-slate-400">Standardized document and process flow diagram are generated.</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button id="btnDownloadDocx" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-xl shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-word"></i> Download Formatted .DOCX
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Left: Process Flow Diagram Viewer (6 cols) -->
+                <div class="lg:col-span-6 bg-slate-950/60 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-diagram-project text-blue-400"></i> Generated Process Flow Diagram
+                        </h3>
+                        <span class="text-xs text-slate-400">Mermaid.js Engine</span>
+                    </div>
+
+                    <div class="bg-slate-900/90 rounded-xl p-6 border border-slate-800/80 flex items-center justify-center min-h-[350px] overflow-auto">
+                        <div id="mermaidRenderContainer" class="mermaid w-full text-center">
+                        </div>
+                    </div>
+
+                    <details class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs">
+                        <summary class="font-medium text-slate-400 cursor-pointer hover:text-slate-200">View / Edit Mermaid Diagram Code</summary>
+                        <textarea id="rawMermaidText" rows="6" class="w-full mt-2 p-2 bg-slate-950 border border-slate-800 rounded text-slate-300 font-mono text-xs focus:outline-none"></textarea>
+                        <button id="btnReRenderDiagram" class="mt-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium text-xs transition">
+                            Re-render Diagram
+                        </button>
+                    </details>
+                </div>
+
+                <!-- Right: Document Text Preview (6 cols) -->
+                <div class="lg:col-span-6 bg-slate-950/60 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-align-left text-indigo-400"></i> Synthesized Document Preview
+                        </h3>
+                        <span class="text-xs text-slate-400">Structured Content</span>
+                    </div>
+
+                    <div id="documentTextPreview" class="bg-slate-900/90 rounded-xl p-6 border border-slate-800/80 overflow-y-auto max-h-[500px] text-xs text-slate-300 space-y-4">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500">
+        Document Writer Application &bull; Hosted on GitHub Pages
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
