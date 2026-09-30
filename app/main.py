@@ -53,7 +53,9 @@ async def process_document(
     transcript_file: Optional[UploadFile] = File(None),
     raw_text: Optional[str] = Form(None),
     screenshots: List[UploadFile] = File([]),
-    api_key: Optional[str] = Form(None)
+    provider: Optional[str] = Form(None),
+    api_key: Optional[str] = Form(None),
+    model_name: Optional[str] = Form(None)
 ):
     """
     Main endpoint: Synthesizes fragmented text / VTT transcripts + standard template + screenshots into a formatted document with process flow diagram.
@@ -96,8 +98,8 @@ async def process_document(
             screenshot_paths[shot.filename] = shot_path
             screenshot_names.append(shot.filename)
 
-    # 4. Process Content with AI (Gemini API via google-genai)
-    ai_engine = AIProcessor(api_key=api_key)
+    # 4. Process Content with Open-Source LLMs via LangChain
+    ai_engine = AIProcessor(provider=provider, api_key=api_key, model_name=model_name)
     structured_data = ai_engine.process_fragmented_text(
         fragmented_text=extracted_text,
         screenshot_filenames=screenshot_names,

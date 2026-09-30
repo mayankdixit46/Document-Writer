@@ -8,8 +8,17 @@ OUTPUT_DIR = BASE_DIR / "outputs"
 UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
 OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
-# Default Gemini model according to modern SDK standards
-DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
+# Open-Source LangChain LLM Configuration
+LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "ollama").lower()  # Options: 'ollama', 'groq', 'openai_compatible'
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.1")
+
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+
+OPENAI_API_BASE = os.environ.get("OPENAI_API_BASE", "http://localhost:1234/v1")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "not-needed")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "local-model")
 
 # Fallback styling options if template parsing yields defaults
 DEFAULT_STYLE = {

@@ -20,9 +20,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const transcriptFileName = document.getElementById("transcriptFileName");
     const btnSampleVtt = document.getElementById("btnSampleVtt");
 
+    const providerSelect = document.getElementById("providerSelect");
     const apiKeyInput = document.getElementById("apiKeyInput");
     const btnSampleData = document.getElementById("btnSampleData");
     const btnProcess = document.getElementById("btnProcess");
+
+    if (providerSelect) {
+        providerSelect.addEventListener("change", () => {
+            if (providerSelect.value === "groq" || providerSelect.value === "openai_compatible") {
+                apiKeyInput.classList.remove("hidden");
+            } else {
+                apiKeyInput.classList.add("hidden");
+            }
+        });
+    }
 
     const progressModal = document.getElementById("progressModal");
     const progressStatus = document.getElementById("progressStatus");
@@ -290,7 +301,10 @@ Welcome to the Equipment Maintenance SOP session.
             formData.append("transcript_file", transcriptFileInput.files[0]);
         }
         formData.append("raw_text", textContent);
-        if (apiKeyInput.value.trim()) {
+        if (providerSelect && providerSelect.value) {
+            formData.append("provider", providerSelect.value);
+        }
+        if (apiKeyInput && apiKeyInput.value.trim()) {
             formData.append("api_key", apiKeyInput.value.trim());
         }
 
@@ -299,7 +313,7 @@ Welcome to the Equipment Maintenance SOP session.
         });
 
         try {
-            setTimeout(() => updateProgress("Gemini AI structuring content & analyzing process steps...", "50%"), 1000);
+            setTimeout(() => updateProgress("LangChain Open-Source LLM structuring content & process steps...", "50%"), 1000);
             setTimeout(() => updateProgress("Generating Mermaid Process Flowchart & Diagram...", "75%"), 2000);
 
             const response = await fetch("/api/process", {

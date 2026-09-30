@@ -45,9 +45,14 @@
                 <button id="btnSampleVtt" class="px-3.5 py-1.5 text-xs font-medium bg-slate-900/80 hover:bg-slate-800 text-slate-300 rounded-full transition border border-slate-700/80 flex items-center gap-1.5 cursor-pointer">
                     <i class="fa-solid fa-file-audio text-indigo-400"></i> Sample VTT
                 </button>
-                <div class="relative">
-                    <input type="password" id="apiKeyInput" placeholder="Gemini API Key" 
-                        class="w-44 px-3 py-1.5 text-xs bg-slate-900/90 border border-slate-700/80 rounded-full focus:outline-none focus:border-cyan-500 text-slate-200 placeholder-slate-500 font-mono">
+                <div class="flex items-center gap-2">
+                    <select id="providerSelect" class="px-3 py-1.5 text-xs bg-slate-900/90 border border-slate-700/80 rounded-full focus:outline-none focus:border-cyan-500 text-cyan-300 font-sans cursor-pointer">
+                        <option value="ollama">🦙 Ollama (Local $0 Free)</option>
+                        <option value="groq">⚡ Groq (Cloud OS LLM)</option>
+                        <option value="openai_compatible">🔌 Custom / LM Studio</option>
+                    </select>
+                    <input type="password" id="apiKeyInput" placeholder="API Key (if Groq/Cloud)" 
+                        class="w-40 px-3 py-1.5 text-xs bg-slate-900/90 border border-slate-700/80 rounded-full focus:outline-none focus:border-cyan-500 text-slate-200 placeholder-slate-500 font-mono hidden">
                 </div>
             </div>
         </div>
